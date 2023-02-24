@@ -62,6 +62,10 @@
   font-size: 19px;
 }
 
+.available-brand-container {
+  display: flex;
+}
+
 .available-and-brand-heading {
   color: #12022f;
   font-family: 'Roboto';
@@ -85,6 +89,11 @@
   align-items: center;
   width: 150px;
   justify-content: space-between;
+}
+
+.plus-minus-btn {
+  background: transparent;
+  border: none;
 }
 
 .plus-minus-img {
