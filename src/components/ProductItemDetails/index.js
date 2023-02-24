@@ -2,6 +2,7 @@ import './index.css'
 import {Component} from 'react'
 import Cookies from 'js-cookie'
 import Loader from 'react-loader-spinner'
+import {Link} from 'react-router-dom'
 import {BsPlusSquare, BsDashSquare} from 'react-icons/bs'
 import SimilarProductItem from '../SimilarProductItem'
 import Header from '../Header'
@@ -116,9 +117,11 @@ class ProductItemDetails extends Component {
     }
 
     const onClickMinus = () => {
-      this.setState(prevState => ({
-        count: prevState.count - 1,
-      }))
+      if (count > 0) {
+        this.setState(prevState => ({
+          count: prevState.count - 1,
+        }))
+      }
     }
 
     return (
@@ -126,7 +129,7 @@ class ProductItemDetails extends Component {
         <img src={imageUrl} alt="product" className="product-img" />
         <div className="product-details-container">
           <h1 className="product-name">{title}</h1>
-          <h1 className="product-price">Rs {price}/-</h1>
+          <p className="product-price">Rs {price}/-</p>
           <div className="rating-reviews-container">
             <div className="rating-container">
               <p className="rating-text">{rating}</p>
@@ -139,18 +142,27 @@ class ProductItemDetails extends Component {
             <p className="reviews-text">{totalReviews} Reviews</p>
           </div>
           <p className="product-description">{description}</p>
-          <p className="available-and-brand-heading">
-            Available:{' '}
-            <span className="available-and-brand-text">{availability}</span>
-          </p>
-          <p className="available-and-brand-heading">
-            Brand: <span className="available-and-brand-text">{brand}</span>
-          </p>
+          <div className="available-brand-container">
+            <p className="available-and-brand-heading">Available:</p>
+            <p className="available-and-brand-text">{availability}</p>
+          </div>
+          <div className="available-brand-container">
+            <p className="available-and-brand-heading">Brand: </p>
+            <p className="available-and-brand-text">{brand}</p>
+          </div>
           <hr className="seperator" />
           <div className="count-container">
-            <BsDashSquare className="plus-minus-img" onClick={onClickMinus} />
+            <button
+              data-testid="minus"
+              type="button"
+              className="plus-minus-btn"
+            >
+              <BsDashSquare className="plus-minus-img" onClick={onClickMinus} />
+            </button>
             <p className="count-text">{count}</p>
-            <BsPlusSquare className="plus-minus-img" onClick={onClickPlus} />
+            <button data-testid="plus" type="button" className="plus-minus-btn">
+              <BsPlusSquare className="plus-minus-img" onClick={onClickPlus} />
+            </button>
           </div>
           <button type="button" className="add-to-cart-btn">
             ADD TO CART
@@ -165,27 +177,27 @@ class ProductItemDetails extends Component {
     )
   }
 
-  renderFailureView = () => {
-    const onClickContinueShopping = () => {}
+  renderFailureView = () => (
+    // const onClickContinueShopping = () => {}
 
-    return (
-      <div className="product-failure-view-container">
-        <img
-          src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-error-view-img.png"
-          alt="error view"
-          className="failure-view-img"
-        />
-        <h1 className="failure-heading">Product Not Found</h1>
+    <div className="product-failure-view-container">
+      <img
+        src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-error-view-img.png"
+        alt="failure view"
+        className="failure-view-img"
+      />
+      <h1 className="failure-heading">Product Not Found</h1>
+      <Link to="/products">
         <button
           className="continue-shopping-btn"
           type="button"
-          onClick={onClickContinueShopping}
+          // onClick={onClickContinueShopping}
         >
           Continue Shopping
         </button>
-      </div>
-    )
-  }
+      </Link>
+    </div>
+  )
 
   renderViewContainer = () => {
     console.log('In renderViewContainer()')
