@@ -2,24 +2,36 @@ import './index.css'
 import {Component} from 'react'
 import Cookies from 'js-cookie'
 import Loader from 'react-loader-spinner'
+import {BsPlusSquare, BsDashSquare} from 'react-icons/bs'
+import SimilarProductItem from '../SimilarProductItem'
+import Header from '../Header'
 
 const apiStatusConstants = {
   initial: 'INITIAL',
   loading: 'LOADING',
+  success: 'SUCCESS',
+  failure: 'FAILURE',
 }
 
 class ProductItemDetails extends Component {
   state = {
     apiStatus: apiStatusConstants.initial,
     productData: [],
+    count: 1,
   }
 
   componentDidMount() {
+    console.log('In componentDidMount()')
     this.getProductItemData()
   }
 
   getProductItemData = async () => {
+    console.log('In getProductItemData()')
     this.setState({apiStatus: apiStatusConstants.loading})
+
+    console.log('apiStatus should change to loading')
+    const {apiStatus} = this.state
+    console.log(apiStatus)
 
     const jwtToken = Cookies.get('jwt_token')
     const options = {
@@ -32,43 +44,48 @@ class ProductItemDetails extends Component {
     const {match} = this.props
     const {params} = match
     const {id} = params
-
     const response = await fetch(`https://apis.ccbp.in/products/${id}`, options)
     const data = await response.json()
 
-    const formattedData = eachItem => ({
-      availability: eachItem.availability,
-      brand: eachItem.brand,
-      description: eachItem.description,
-      id: eachItem.id,
-      imageUrl: eachItem.image_url,
-      price: eachItem.price,
-      rating: eachItem.rating,
-      style: eachItem.style,
-      title: eachItem.title,
-      totalReviews: eachItem.total_reviews,
-    })
+    if (response.ok === false) {
+      this.setState({
+        apiStatus: apiStatusConstants.failure,
+      })
+    } else {
+      const formattedData = eachItem => ({
+        availability: eachItem.availability,
+        brand: eachItem.brand,
+        description: eachItem.description,
+        id: eachItem.id,
+        imageUrl: eachItem.image_url,
+        price: eachItem.price,
+        rating: eachItem.rating,
+        style: eachItem.style,
+        title: eachItem.title,
+        totalReviews: eachItem.total_reviews,
+      })
 
-    const updatedData = {
-      availability: data.availability,
-      brand: data.brand,
-      description: data.description,
-      id: data.id,
-      imageUrl: data.image_url,
-      price: data.price,
-      rating: data.rating,
-      style: data.style,
-      title: data.title,
-      totalReviews: data.total_reviews,
-      similarProducts: data.similar_products.map(eachItem =>
-        formattedData(eachItem),
-      ),
+      const updatedData = {
+        availability: data.availability,
+        brand: data.brand,
+        description: data.description,
+        id: data.id,
+        imageUrl: data.image_url,
+        price: data.price,
+        rating: data.rating,
+        style: data.style,
+        title: data.title,
+        totalReviews: data.total_reviews,
+        similarProducts: data.similar_products.map(eachItem =>
+          formattedData(eachItem),
+        ),
+      }
+
+      this.setState({
+        productData: updatedData,
+        apiStatus: apiStatusConstants.success,
+      })
     }
-
-    this.setState({
-      productData: updatedData,
-      apiStatus: apiStatusConstants.success,
-    })
   }
 
   loadingView = () => (
@@ -78,35 +95,100 @@ class ProductItemDetails extends Component {
   )
 
   renderSuccessView = () => {
-    const {productData} = this.state
+    const {productData, count} = this.state
 
-    const {imageUrl, title, price, totalReviews, rating, description, availability, brand, similarProducts} = productData
+    const {
+      imageUrl,
+      title,
+      price,
+      totalReviews,
+      rating,
+      description,
+      availability,
+      brand,
+      similarProducts,
+    } = productData
 
-        return(
-              <div className="product-item-details-container">
-        <img src="" />
-        <h1></h1>
-        <h1></h1>
-        <div>
-          <div></div>
-          <p></p>
-        </div>
-        <p></p>
-        <div></div>
-        <div></div>
-        <hr />
-        <div></div>
-        <button></button>
-        <h1></h1>
-        {similarProducts.map(eachItem => 
-            <SimilarProducts productDetail = {eachItem} key = {eachItem.id}/>
-        )}
-      </div>
-        )
+    const onClickPlus = () => {
+      this.setState(prevState => ({
+        count: prevState.count + 1,
+      }))
     }
+
+    const onClickMinus = () => {
+      this.setState(prevState => ({
+        count: prevState.count - 1,
+      }))
+    }
+
+    return (
+      <div className="product-item-details-container">
+        <img src={imageUrl} alt="product" className="product-img" />
+        <div className="product-details-container">
+          <h1 className="product-name">{title}</h1>
+          <h1 className="product-price">Rs {price}/-</h1>
+          <div className="rating-reviews-container">
+            <div className="rating-container">
+              <p className="rating-text">{rating}</p>
+              <img
+                src="https://assets.ccbp.in/frontend/react-js/star-img.png"
+                alt=""
+                className="product-star-img"
+              />
+            </div>
+            <p className="reviews-text">{totalReviews} Reviews</p>
+          </div>
+          <p className="product-description">{description}</p>
+          <p className="available-and-brand-heading">
+            Available:{' '}
+            <span className="available-and-brand-text">{availability}</span>
+          </p>
+          <p className="available-and-brand-heading">
+            Brand: <span className="available-and-brand-text">{brand}</span>
+          </p>
+          <hr className="seperator" />
+          <div className="count-container">
+            <BsDashSquare className="plus-minus-img" onClick={onClickMinus} />
+            <p className="count-text">{count}</p>
+            <BsPlusSquare className="plus-minus-img" onClick={onClickPlus} />
+          </div>
+          <button type="button" className="add-to-cart-btn">
+            ADD TO CART
+          </button>
+
+          <h1>Similar Products</h1>
+          {similarProducts.map(eachItem => (
+            <SimilarProductItem productDetail={eachItem} key={eachItem.id} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  renderFailureView = () => {
+    const onClickContinueShopping = () => {}
+
+    return (
+      <div className="product-failure-view-container">
+        <img
+          src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-error-view-img.png"
+          alt="error view"
+          className="failure-view-img"
+        />
+        <h1 className="failure-heading">Product Not Found</h1>
+        <button
+          className="continue-shopping-btn"
+          type="button"
+          onClick={onClickContinueShopping}
+        >
+          Continue Shopping
+        </button>
+      </div>
+    )
   }
 
   renderViewContainer = () => {
+    console.log('In renderViewContainer()')
     const {apiStatus} = this.state
 
     switch (apiStatus) {
@@ -122,7 +204,15 @@ class ProductItemDetails extends Component {
   }
 
   render() {
-    return <div>{this.renderViewContainer()}</div>
+    console.log('In render()')
+    const {apiStatus} = this.state
+    console.log(apiStatus)
+    return (
+      <div>
+        <Header />
+        {this.renderViewContainer()}
+      </div>
+    )
   }
 }
 
